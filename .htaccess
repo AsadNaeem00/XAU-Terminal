@@ -1,0 +1,130 @@
+# ============================================================
+# XAUUSD Intelligence Terminal — .htaccess
+# Apache 2.4+ / Hostinger Business Shared Hosting
+# ============================================================
+
+Options -Indexes -ExecCGI
+ServerSignature Off
+
+# ── Force HTTPS ──────────────────────────────────────────────
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Redirect HTTP → HTTPS
+  RewriteCond %{HTTPS} off
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # Remove www (adjust to add www if preferred)
+  # RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+  # RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
+
+  # Block access to sensitive directories
+  RewriteRule ^(cache|logs|includes)/   - [F,L]
+
+  # Block hidden files (.env, .git, etc.)
+  RewriteRule (^|/)\.                   - [F,L]
+
+  # Block config.local.php directly
+  RewriteRule ^includes/config\.local\.php$ - [F,L]
+
+  # Clean URL: /api/price → /api/price.php (optional)
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_URI} ^/api/([a-z]+)$
+  RewriteRule ^api/([a-z]+)$ /api/$1.php [L,QSA]
+</IfModule>
+
+# ── Block sensitive files ─────────────────────────────────────
+<FilesMatch "(config\.local\.php|\.env|\.git|composer\.json|package\.json|README\.md)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order deny,allow
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+# ── PHP settings ─────────────────────────────────────────────
+<IfModule mod_php8.c>
+  php_flag  display_errors       Off
+  php_flag  log_errors           On
+  php_value error_log            logs/php-error.log
+  php_value session.cookie_httponly 1
+  php_value session.cookie_samesite Strict
+  php_flag  session.use_strict_mode 1
+  php_value upload_max_filesize  2M
+  php_value post_max_size        4M
+  php_value max_execution_time   30
+  php_value memory_limit         128M
+</IfModule>
+
+# ── Security Headers ──────────────────────────────────────────
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options    "nosniff"
+  Header always set X-Frame-Options           "DENY"
+  Header always set X-XSS-Protection          "1; mode=block"
+  Header always set Referrer-Policy           "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy        "geolocation=(), microphone=(), camera=()"
+
+  # Remove server info
+  Header unset Server
+  Header unset X-Powered-By
+  Header always unset X-Powered-By
+</IfModule>
+
+# ── Compression ───────────────────────────────────────────────
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/javascript
+  AddOutputFilterByType DEFLATE application/javascript application/json
+  AddOutputFilterByType DEFLATE text/plain text/xml application/xml
+  AddOutputFilterByType DEFLATE font/woff2 font/woff image/svg+xml
+</IfModule>
+
+# ── Browser Caching ───────────────────────────────────────────
+<IfModule mod_expires.c>
+  ExpiresActive On
+
+  # Fonts & images — 1 year
+  ExpiresByType font/woff2          "access plus 1 year"
+  ExpiresByType font/woff           "access plus 1 year"
+  ExpiresByType image/svg+xml       "access plus 1 month"
+  ExpiresByType image/png           "access plus 1 month"
+  ExpiresByType image/jpeg          "access plus 1 month"
+  ExpiresByType image/webp          "access plus 1 month"
+  ExpiresByType image/x-icon        "access plus 1 year"
+
+  # CSS & JS — 7 days (versioned via query string in templates)
+  ExpiresByType text/css            "access plus 7 days"
+  ExpiresByType application/javascript "access plus 7 days"
+  ExpiresByType text/javascript     "access plus 7 days"
+
+  # HTML & PHP — no cache
+  ExpiresByType text/html           "access plus 0 seconds"
+
+  # JSON API responses — no cache (handled in PHP headers)
+  ExpiresByType application/json    "access plus 0 seconds"
+</IfModule>
+
+# ── Cache-Control for dynamic pages ──────────────────────────
+<FilesMatch "\.(php)$">
+  <IfModule mod_headers.c>
+    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+    Header set Pragma "no-cache"
+  </IfModule>
+</FilesMatch>
+
+# ── Block bad bots ────────────────────────────────────────────
+<IfModule mod_rewrite.c>
+  RewriteCond %{HTTP_USER_AGENT} (libwww-perl|wget|python|nikto|curl|scan|java|winhttp|HTTrack) [NC,OR]
+  RewriteCond %{HTTP_USER_AGENT} (sqlmap|havij|sucker|zmeu|morfeus|scanner) [NC]
+  RewriteRule .* - [F,L]
+</IfModule>
+
+# ── Default charset ───────────────────────────────────────────
+AddDefaultCharset UTF-8
+
+# ── Error documents ───────────────────────────────────────────
+ErrorDocument 403 /error.php?code=403
+ErrorDocument 404 /error.php?code=404
+ErrorDocument 500 /error.php?code=500
