@@ -1,0 +1,50 @@
+# ============================================================
+# XAUUSD Intelligence Terminal — .gitignore
+# ============================================================
+
+# Local config (NEVER commit — contains DB credentials & API keys)
+includes/config.local.php
+
+# Runtime directories
+cache/
+logs/
+*.log
+
+# PHP error logs
+php_error.log
+error_log
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Node (if used for tooling only)
+node_modules/
+npm-debug.log
+
+# Composer
+vendor/
+composer.lock
+
+# Environment files
+.env
+.env.local
+.env.production
+
+# Backup files
+*.bak
+*.backup
+*.sql.gz
+
+# Deployment artifacts
+*.zip
+*.tar.gz
+deploy.sh

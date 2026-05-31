@@ -1,0 +1,42 @@
+<?php
+/**
+ * Local configuration — includes/config.local.php
+ *
+ * !! NEVER commit this file to version control !!
+ * Add to .gitignore:  includes/config.local.php
+ *
+ * Copy this template, rename it config.local.php,
+ * and fill in your real credentials.
+ *
+ * On Hostinger: create this file via File Manager or SSH.
+ */
+
+// ── Database (Hostinger MySQL) ────────────────────────────────
+// Find these in hPanel → Databases → MySQL Databases
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'u123456789_xauusd');    // your DB name
+define('DB_USER', 'u123456789_terminal');   // your DB user
+define('DB_PASS', 'YourStrongPassword!');   // your DB password
+
+// ── Environment ───────────────────────────────────────────────
+// Set to 'production' on live server
+define('APP_ENV', 'production');
+
+/*
+ * API keys are stored in the database (settings table).
+ * After deploying, go to your database and update the
+ * settings table with your real API keys:
+ *
+ * UPDATE settings SET value = 'YOUR_REAL_KEY' WHERE `key` = 'alpha_vantage_key';
+ * UPDATE settings SET value = 'YOUR_REAL_KEY' WHERE `key` = 'finnhub_key';
+ * UPDATE settings SET value = 'YOUR_REAL_KEY' WHERE `key` = 'metals_api_key';
+ * UPDATE settings SET value = 'YOUR_REAL_KEY' WHERE `key` = 'news_api_key';
+ *
+ * Or use phpMyAdmin on Hostinger to edit the settings table directly.
+ *
+ * API Key sources:
+ * - Alpha Vantage:  https://www.alphavantage.co/support/#api-key  (free)
+ * - Finnhub:        https://finnhub.io/register                   (free)
+ * - Metals API:     https://metals-api.com/register               (free tier)
+ * - NewsAPI:        https://newsapi.org/register                   (free)
+ */
